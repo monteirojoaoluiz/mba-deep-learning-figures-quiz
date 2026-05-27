@@ -90,9 +90,19 @@
       transition: max-height .25s ease;
     }
     .toc.open {
-      max-height: 60vh;
+      display: flex;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      max-height: calc(100vh - 56px);
       overflow-y: auto;
-      margin-top: 12px;
+      margin: 0;
+      padding: 14px clamp(12px, 3vw, 28px);
+      background: rgba(255, 255, 255, 0.98);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      z-index: 18;
     }
     .toc-link {
       display: inline-block;
