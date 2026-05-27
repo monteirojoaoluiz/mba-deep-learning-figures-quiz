@@ -231,6 +231,33 @@
     .hidden { display: none !important; }
     code { font: 0.95em ui-monospace, SFMono-Regular, Menlo, monospace; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
     strong { font-weight: 650; }
+    .prompt h3, .answer-panel h3 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 8px;
+    }
+    .tts-btn {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--accent);
+      border-radius: 999px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+    .tts-btn:hover { border-color: var(--accent); background: #eef7f3; }
+    .tts-btn[data-state="loading"] { opacity: .6; cursor: wait; }
+    .tts-btn[data-state="playing"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tts-btn .tts-spin { display: inline-block; animation: tts-spin 1s linear infinite; }
+    @keyframes tts-spin { to { transform: rotate(360deg); } }
     @media (max-width: 720px) {
       .filter { display: none; }
       .top-bar .filters { display: none; }
@@ -2632,6 +2659,92 @@ The tradeoff is that WaveNet is still autoregressive when generating: it predict
     });
 
     render();
+  </script>
+  <script type="module">
+    // Pre-generated Kokoro 82M audio (via OpenRouter), stored as MP3s.
+    // Always plays at 2x.
+    const PLAYBACK_RATE = 2.0;
+    const AUDIO_BASE = 'assets/audio';
+
+    const audio = new Audio();
+    audio.playbackRate = PLAYBACK_RATE;
+    let activeBtn = null;
+
+    function setState(btn, state) {
+      if (!btn) return;
+      btn.dataset.state = state;
+      if (state === 'loading') btn.innerHTML = '<span class="tts-spin">↻</span>';
+      else if (state === 'playing') btn.innerHTML = '◼';
+      else btn.innerHTML = '▶';
+      btn.setAttribute('aria-label',
+        state === 'playing' ? 'Stop audio' :
+        state === 'loading' ? 'Loading audio' : 'Play audio at 2x');
+    }
+
+    function stopActive() {
+      if (!audio.paused) audio.pause();
+      audio.currentTime = 0;
+      if (activeBtn) setState(activeBtn, 'idle');
+      activeBtn = null;
+    }
+
+    audio.addEventListener('ended', () => { if (activeBtn) setState(activeBtn, 'idle'); activeBtn = null; });
+    audio.addEventListener('error', () => {
+      if (activeBtn) {
+        console.warn('Audio failed to load:', audio.src);
+        setState(activeBtn, 'idle');
+        activeBtn = null;
+      }
+    });
+
+    function audioUrlFor(btn) {
+      const wrap = btn.closest('.prompt, .answer-panel');
+      const section = wrap?.closest('section.page');
+      if (!section) return null;
+      const idx = String(section.dataset.index || '').padStart(3, '0');
+      const side = section.classList.contains('page-answer') ? 'a' : 'q';
+      return `${AUDIO_BASE}/${side}-${idx}.mp3`;
+    }
+
+    function injectButtons() {
+      document.querySelectorAll('.prompt, .answer-panel').forEach((wrap) => {
+        const heading = wrap.querySelector('h3');
+        if (!heading || heading.querySelector('.tts-btn')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tts-btn';
+        setState(btn, 'idle');
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (activeBtn === btn) { stopActive(); return; }
+          stopActive();
+          activeBtn = btn;
+          const url = audioUrlFor(btn);
+          if (!url) { activeBtn = null; return; }
+          setState(btn, 'loading');
+          audio.src = url;
+          audio.playbackRate = PLAYBACK_RATE;
+          try {
+            await audio.play();
+            audio.playbackRate = PLAYBACK_RATE;
+            setState(btn, 'playing');
+          } catch (err) {
+            console.warn('Playback failed:', err);
+            setState(btn, 'idle');
+            activeBtn = null;
+          }
+        });
+        heading.appendChild(btn);
+      });
+    }
+
+    injectButtons();
+    ['prev-btn', 'next-btn', 'flip-btn'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('click', stopActive);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowLeft', 'ArrowRight', ' ', 'Enter', 'PageUp', 'PageDown', 'h', 'l', 'j', 'k'].includes(e.key)) stopActive();
+    });
   </script>
 </body>
 </html>
