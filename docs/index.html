@@ -229,11 +229,20 @@
       background: var(--bg);
     }
     .hidden { display: none !important; }
+    code { font: 0.95em ui-monospace, SFMono-Regular, Menlo, monospace; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+    strong { font-weight: 650; }
     @media (max-width: 720px) {
       .filter { display: none; }
       .top-bar .filters { display: none; }
     }
   </style>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
 </head>
 <body>
   <nav class="top-bar" aria-label="Flashcard navigation">
@@ -2518,6 +2527,18 @@ The tradeoff is that WaveNet is still autoregressive when generating: it predict
   </main>
 
   <script>
+    // Markdown pass: convert **bold** and `code` inside question/answer text.
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    document.querySelectorAll('.question, .answer').forEach((el) => {
+      const raw = el.textContent;
+      let html = escapeHtml(raw);
+      html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+      html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+      el.innerHTML = html;
+    });
+
     const allPages = Array.from(document.querySelectorAll('.page'));
     const progressEl = document.getElementById('progress');
     const prevBtn = document.getElementById('prev-btn');
