@@ -1,0 +1,29 @@
+# Course materials (not published)
+readings/
+sample_tests/
+books/
+assignments/
+sessions_recordings/
+sessions_slides/
+sessions_summaries/
+sessions_transcriptions/
+course_setup/
+tmp/
+output/
+.playwright-mcp/
+
+# Tools — only quiz scripts are tracked; rest stays local
+tools/*
+!tools/build_figures_quiz.py
+!tools/generate_strong_answers.py
+
+# Secrets / caches
+.env
+**/.env
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
