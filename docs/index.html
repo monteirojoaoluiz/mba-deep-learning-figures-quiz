@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Deep Learning Figures Quiz</title>
+  <title>Deep Learning Flashcards</title>
   <style>
     :root {
       color-scheme: light;
@@ -15,15 +15,13 @@
       --accent: #0f6b57;
     }
     * { box-sizing: border-box; }
-    html {
-      scroll-behavior: smooth;
-      scroll-snap-type: y mandatory;
-    }
+    html, body { height: 100%; }
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
       background: var(--bg);
+      overflow: hidden;
     }
     .top-bar {
       position: fixed;
@@ -70,8 +68,9 @@
       padding: 88px clamp(18px, 4vw, 48px) 28px;
       background: var(--paper);
       border-bottom: 1px solid var(--line);
-      scroll-snap-align: start;
+      display: none;
     }
+    .intro.open { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; overflow: auto; z-index: 15; }
     h1 {
       margin: 0 0 8px;
       font-size: clamp(1.6rem, 3vw, 2.4rem);
@@ -91,7 +90,7 @@
       transition: max-height .25s ease;
     }
     .toc.open {
-      max-height: 240px;
+      max-height: 60vh;
       overflow-y: auto;
       margin-top: 12px;
     }
@@ -110,18 +109,21 @@
       color: var(--accent);
     }
     .slides {
-      padding-top: 56px;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
     }
     .page {
-      min-height: 100vh;
-      min-height: 100dvh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      display: flex;
-      align-items: stretch;
-      border-bottom: 1px solid var(--line);
+      position: absolute;
+      inset: 0;
+      display: none;
       background: var(--paper);
+      overflow-y: auto;
     }
+    .page.active { display: flex; align-items: stretch; }
     .page-answer {
       background: #f8fbfa;
     }
@@ -133,6 +135,7 @@
       flex-direction: column;
       gap: 14px;
       flex: 1;
+      cursor: pointer;
     }
     .meta {
       display: flex;
@@ -181,12 +184,12 @@
     }
     .figure-large img {
       width: 100%;
-      max-height: min(52vh, 520px);
+      max-height: min(45vh, 460px);
       object-fit: contain;
     }
     .figure-small img {
       width: 100%;
-      max-height: min(28vh, 240px);
+      max-height: min(24vh, 220px);
       object-fit: contain;
       opacity: .95;
     }
@@ -223,8 +226,8 @@
   </style>
 </head>
 <body>
-  <nav class="top-bar" aria-label="Quiz navigation">
-    <a class="home" href="#top">Quiz</a>
+  <nav class="top-bar" aria-label="Flashcard navigation">
+    <a class="home" href="#" id="intro-toggle">Flashcards</a>
     <span class="filters">
       <button class="filter active" type="button" data-filter="all">All</button>
       <button class="filter" type="button" data-filter="Chapter 10">Ch.10</button>
@@ -233,15 +236,17 @@
       <button class="filter" type="button" data-filter="Sample Exam 2024-06-27">Exam</button>
       <button class="filter" type="button" data-filter="Sample Resit 2024-07-24">Resit</button>
     </span>
-    <button class="nav-btn" type="button" id="prev-btn" aria-label="Previous page">←</button>
-    <button class="nav-btn" type="button" id="next-btn" aria-label="Next page">→</button>
+    <button class="nav-btn" type="button" id="prev-btn" aria-label="Previous card">←</button>
+    <button class="nav-btn" type="button" id="flip-btn" aria-label="Flip card">Flip</button>
+    <button class="nav-btn" type="button" id="next-btn" aria-label="Next card">→</button>
+    <button class="nav-btn" type="button" id="shuffle-btn" aria-label="Shuffle">Shuffle</button>
     <button class="toc-toggle" type="button" id="toc-toggle">Index</button>
-    <span class="progress" id="progress">1 / 118 pages</span>
+    <span class="progress" id="progress">1 / 59</span>
   </nav>
 
   <header class="intro" id="top">
-    <h1>Deep Learning Figures Quiz</h1>
-    <p class="summary">Full-screen study deck: one page per question, one page per answer. Use arrow keys, scroll, or the nav buttons. 59 figures from chapters and sample exams.</p>
+    <h1>Deep Learning Flashcards</h1>
+    <p class="summary">59 cards from chapters and sample exams. Click a card or press <kbd>Space</kbd> to flip between question and answer. Use <kbd>←</kbd> / <kbd>→</kbd> or the buttons to move between cards. Filter by source, jump via the index, or shuffle the deck.</p>
     <nav class="toc" id="toc" aria-label="Figure index">
       <a class="toc-link" href="#item-001-question" data-source="Sample Exam 2024-06-27">01. Exam Q1</a><a class="toc-link" href="#item-002-question" data-source="Sample Exam 2024-06-27">02. Exam Q2</a><a class="toc-link" href="#item-003-question" data-source="Sample Exam 2024-06-27">03. Exam Q3</a><a class="toc-link" href="#item-004-question" data-source="Sample Exam 2024-06-27">04. Exam Q4</a><a class="toc-link" href="#item-005-question" data-source="Sample Exam 2024-06-27">05. Exam Q5</a><a class="toc-link" href="#item-006-question" data-source="Sample Exam 2024-06-27">06. Exam Q6</a><a class="toc-link" href="#item-007-question" data-source="Sample Resit 2024-07-24">07. Resit Q1</a><a class="toc-link" href="#item-008-question" data-source="Sample Resit 2024-07-24">08. Resit Q2</a><a class="toc-link" href="#item-009-question" data-source="Sample Resit 2024-07-24">09. Resit Q3</a><a class="toc-link" href="#item-010-question" data-source="Sample Resit 2024-07-24">10. Resit Q4</a><a class="toc-link" href="#item-011-question" data-source="Sample Resit 2024-07-24">11. Resit Q5</a><a class="toc-link" href="#item-012-question" data-source="Chapter 10">12. Figure 10-1</a><a class="toc-link" href="#item-013-question" data-source="Chapter 10">13. Figure 10-2</a><a class="toc-link" href="#item-014-question" data-source="Chapter 10">14. Figure 10-3</a><a class="toc-link" href="#item-015-question" data-source="Chapter 10">15. Figure 10-4</a><a class="toc-link" href="#item-016-question" data-source="Chapter 10">16. Figure 10-5</a><a class="toc-link" href="#item-017-question" data-source="Chapter 10">17. Figure 10-6</a><a class="toc-link" href="#item-018-question" data-source="Chapter 10">18. Figure 10-7</a><a class="toc-link" href="#item-019-question" data-source="Chapter 10">19. Figure 10-8</a><a class="toc-link" href="#item-020-question" data-source="Chapter 10">20. Figure 10-9</a><a class="toc-link" href="#item-021-question" data-source="Chapter 14">21. Figure 14-1</a><a class="toc-link" href="#item-022-question" data-source="Chapter 14">22. Figure 14-2</a><a class="toc-link" href="#item-023-question" data-source="Chapter 14">23. Figure 14-3</a><a class="toc-link" href="#item-024-question" data-source="Chapter 14">24. Figure 14-4</a><a class="toc-link" href="#item-025-question" data-source="Chapter 14">25. Figure 14-5</a><a class="toc-link" href="#item-026-question" data-source="Chapter 14">26. Figure 14-6</a><a class="toc-link" href="#item-027-question" data-source="Chapter 14">27. Figure 14-7</a><a class="toc-link" href="#item-028-question" data-source="Chapter 14">28. Figure 14-8</a><a class="toc-link" href="#item-029-question" data-source="Chapter 14">29. Figure 14-9</a><a class="toc-link" href="#item-030-question" data-source="Chapter 14">30. Figure 14-10</a><a class="toc-link" href="#item-031-question" data-source="Chapter 14">31. Figure 14-11</a><a class="toc-link" href="#item-032-question" data-source="Chapter 14">32. Figure 14-12</a><a class="toc-link" href="#item-033-question" data-source="Chapter 14">33. Figure 14-13</a><a class="toc-link" href="#item-034-question" data-source="Chapter 14">34. Figure 14-14</a><a class="toc-link" href="#item-035-question" data-source="Chapter 14">35. Figure 14-15</a><a class="toc-link" href="#item-036-question" data-source="Chapter 14">36. Figure 14-16</a><a class="toc-link" href="#item-037-question" data-source="Chapter 14">37. Figure 14-17</a><a class="toc-link" href="#item-038-question" data-source="Chapter 14">38. Figure 14-18</a><a class="toc-link" href="#item-039-question" data-source="Chapter 14">39. Figure 14-19</a><a class="toc-link" href="#item-040-question" data-source="Chapter 14">40. Figure 14-20</a><a class="toc-link" href="#item-041-question" data-source="Chapter 14">41. Figure 14-21</a><a class="toc-link" href="#item-042-question" data-source="Chapter 14">42. Figure 14-22</a><a class="toc-link" href="#item-043-question" data-source="Chapter 14">43. Figure 14-23</a><a class="toc-link" href="#item-044-question" data-source="Chapter 14">44. Figure 14-24</a><a class="toc-link" href="#item-045-question" data-source="Chapter 14">45. Figure 14-25</a><a class="toc-link" href="#item-046-question" data-source="Chapter 14">46. Figure 14-26</a><a class="toc-link" href="#item-047-question" data-source="Chapter 14">47. Figure 14-27</a><a class="toc-link" href="#item-048-question" data-source="Chapter 14">48. Figure 14-28</a><a class="toc-link" href="#item-049-question" data-source="Chapter 15">49. Figure 15-1</a><a class="toc-link" href="#item-050-question" data-source="Chapter 15">50. Figure 15-2</a><a class="toc-link" href="#item-051-question" data-source="Chapter 15">51. Figure 15-3</a><a class="toc-link" href="#item-052-question" data-source="Chapter 15">52. Figure 15-4</a><a class="toc-link" href="#item-053-question" data-source="Chapter 15">53. Figure 15-5</a><a class="toc-link" href="#item-054-question" data-source="Chapter 15">54. Figure 15-6</a><a class="toc-link" href="#item-055-question" data-source="Chapter 15">55. Figure 15-7</a><a class="toc-link" href="#item-056-question" data-source="Chapter 15">56. Figure 15-8</a><a class="toc-link" href="#item-057-question" data-source="Chapter 15">57. Figure 15-9</a><a class="toc-link" href="#item-058-question" data-source="Chapter 15">58. Figure 15-10</a><a class="toc-link" href="#item-059-question" data-source="Chapter 15">59. Figure 15-11</a>
     </nav>
@@ -264,7 +269,7 @@
 - What are the advantages of end-to-end learning compared to traditional paradigms?
 - Which types of data would you expect deep learning to be effective on and which types of data are more suitable for traditional machine learning approaches?</p>
         </div>
-        <p class="hint"><a href="#item-001-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-001-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="1" data-total="59">
@@ -287,7 +292,7 @@ The main advantage of end-to-end learning is that it reduces the need for manual
 
 Deep learning is especially effective for unstructured, high-dimensional data such as images, audio, video, natural language, sensor streams, and other data where useful patterns are complex and layered. Traditional machine learning is often more suitable for smaller, structured tabular datasets, business metrics, financial records, survey data, or problems where the number of observations is limited and features are already meaningful. In MBA terms: deep learning shines when the raw data is rich but messy; traditional ML often works better when the data is clean, structured, and feature columns already carry business meaning.</p>
         </div>
-        <p class="hint"><a href="#item-001-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-002-question" class="page page-question" data-source="Sample Exam 2024-06-27" data-index="2" data-total="59">
@@ -306,7 +311,7 @@ Deep learning is especially effective for unstructured, high-dimensional data su
 - How are the weights of such filters typically learned and why is that a better strategy than using e.g. fixed weights?
 - How do such building blocks contribute to the entire CNN architectures?</p>
         </div>
-        <p class="hint"><a href="#item-002-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-002-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="2" data-total="59">
@@ -327,7 +332,7 @@ The filter weights are typically learned from data through backpropagation and g
 
 These convolutional building blocks are stacked to form complete CNN architectures. Lower layers usually learn simple visual features, while deeper layers combine them into more abstract patterns such as object parts, shapes, or class-specific structures. Together with nonlinear activations, pooling or striding, normalization, and final classification or regression layers, convolutional layers allow CNNs to learn hierarchical representations efficiently from raw image data.</p>
         </div>
-        <p class="hint"><a href="#item-002-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-003-question" class="page page-question" data-source="Sample Exam 2024-06-27" data-index="3" data-total="59">
@@ -343,7 +348,7 @@ These convolutional building blocks are stacked to form complete CNN architectur
           <p class="question">- Name and briefly describe the type of CNN layer illustrated in the figure below.
 - What is the purpose of such layers and how do they fit into overall CNN architecture?</p>
         </div>
-        <p class="hint"><a href="#item-003-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-003-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="3" data-total="59">
@@ -364,7 +369,7 @@ In the overall CNN architecture, pooling layers usually appear after convolution
 
 Pooling is not a learned layer in the same way as convolution: it has no trainable weights. Its behavior is defined by hyperparameters such as pool size and stride. In exam terms, the key idea is that max pooling keeps the most salient local response, creating a more compact and somewhat translation-invariant representation for later classification or prediction layers.</p>
         </div>
-        <p class="hint"><a href="#item-003-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-004-question" class="page page-question" data-source="Sample Exam 2024-06-27" data-index="4" data-total="59">
@@ -381,7 +386,7 @@ Pooling is not a learned layer in the same way as convolution: it has no trainab
 - Briefly describe the type of application each of the illustrated architectures can be used for.
 - Name and briefly describe a major challenge/issue associated with RNNs. How can it be mitigated?</p>
         </div>
-        <p class="hint"><a href="#item-004-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-004-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="4" data-total="59">
@@ -402,7 +407,7 @@ A major issue with standard RNNs is the vanishing or exploding gradient problem 
 
 This can be mitigated with gated architectures such as LSTMs and GRUs, which use gates to control what information is stored, forgotten, and passed forward, allowing important information to persist over longer sequences. Exploding gradients can also be controlled with gradient clipping, while vanishing-gradient issues can be reduced through better initialization, shorter truncated backpropagation windows, normalization, residual connections, or, in many modern sequence tasks, replacing or augmenting RNNs with attention mechanisms and Transformer-based models.</p>
         </div>
-        <p class="hint"><a href="#item-004-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-005-question" class="page page-question" data-source="Sample Exam 2024-06-27" data-index="5" data-total="59">
@@ -418,7 +423,7 @@ This can be mitigated with gated architectures such as LSTMs and GRUs, which use
           <p class="question">- Name and briefly explain two common tasks in geometric deep learning on graphs.
 - Based on the illustration below, briefly explain the motivation and process of node embedding.</p>
         </div>
-        <p class="hint"><a href="#item-005-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-005-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="5" data-total="59">
@@ -439,7 +444,7 @@ The illustration shows the basic idea of node embedding. Nodes from the original
 
 The motivation is that graphs are discrete and irregular, while most machine-learning models operate more easily on numerical vectors. Node embeddings turn graph information into compact vectors that can be used for prediction, clustering, recommendation, or visualization. Ideally, nodes that are close or structurally similar in the original graph are placed close together in the embedding space, so the geometry of the vectors preserves meaningful relationships from the network.</p>
         </div>
-        <p class="hint"><a href="#item-005-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-006-question" class="page page-question" data-source="Sample Exam 2024-06-27" data-index="6" data-total="59">
@@ -455,7 +460,7 @@ The motivation is that graphs are discrete and irregular, while most machine-lea
           <p class="question">- What are the Vision Language Models (VLMs) and how do they work? If it helps, refer to the illustration of CLIP pipeline below.
 - Name several VLM use cases and briefly describe one of them.</p>
         </div>
-        <p class="hint"><a href="#item-006-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-006-answer" class="page page-answer" data-source="Sample Exam 2024-06-27" data-index="6" data-total="59">
@@ -476,7 +481,7 @@ After training, CLIP can perform zero-shot classification. Class labels such as 
 
 Common VLM use cases include zero-shot image classification, image search using text queries, automatic image captioning, visual question answering, content moderation, medical image support, robotics perception, and multimodal recommendation systems. For example, in text-based image search, a user can type “a red sports car parked at night,” and the system retrieves images whose visual embeddings are closest to that text embedding, even if the images were never manually tagged with those exact words.</p>
         </div>
-        <p class="hint"><a href="#item-006-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-007-question" class="page page-question" data-source="Sample Resit 2024-07-24" data-index="7" data-total="59">
@@ -493,7 +498,7 @@ Common VLM use cases include zero-shot image classification, image search using 
 - What makes deep learning different and more effective than the traditional ML pipelines?
 - What are the advantages and disadvantages of deep learning?</p>
         </div>
-        <p class="hint"><a href="#item-007-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-007-answer" class="page page-answer" data-source="Sample Resit 2024-07-24" data-index="7" data-total="59">
@@ -516,7 +521,7 @@ The main advantages of deep learning are high predictive performance, automatic 
 
 The disadvantages are also important. Deep learning typically requires large amounts of data, substantial computing power, and careful tuning of architectures, training procedures, and regularization. Models can be expensive to train and deploy, hard to interpret, vulnerable to overfitting or distribution shifts, and sometimes unreliable when used outside the conditions represented in the training data. For business use, this means deep learning is powerful when the data, infrastructure, and problem scale justify it, but simpler traditional ML methods may still be preferable when interpretability, small datasets, speed, or cost control are more important.</p>
         </div>
-        <p class="hint"><a href="#item-007-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-008-question" class="page page-question" data-source="Sample Resit 2024-07-24" data-index="8" data-total="59">
@@ -533,7 +538,7 @@ The disadvantages are also important. Deep learning typically requires large amo
 - Briefly explain the structure and role of different types of CNN layers depicted in the figure.
 - On the example of figure below, briefly explain the concept of end-to-end learning.</p>
         </div>
-        <p class="hint"><a href="#item-008-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-008-answer" class="page page-answer" data-source="Sample Resit 2024-07-24" data-index="8" data-total="59">
@@ -554,7 +559,7 @@ Near the end of the network, the extracted feature maps are passed into fully co
 
 End-to-end learning means that the CNN learns the entire mapping from raw input image to final output directly from training data. Instead of manually designing features, such as “roof shape,” “window texture,” or “object outline,” the network automatically learns useful filters and decision rules by minimizing a loss function. During training, errors from the final prediction are backpropagated through all layers, updating both the feature-extraction filters and the final classification weights together. This is why CNNs are powerful: the whole system is optimized jointly for the target task.</p>
         </div>
-        <p class="hint"><a href="#item-008-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-009-question" class="page page-question" data-source="Sample Resit 2024-07-24" data-index="9" data-total="59">
@@ -570,7 +575,7 @@ End-to-end learning means that the CNN learns the entire mapping from raw input 
           <p class="question">- What makes deep computer vision particularly challenging and different from e.g. classic machine learning with tabular data?
 - Using one of the computer vision tasks from figure below as an example, briefly explain how convolutional neural networks can be effectively applied to solve it.</p>
         </div>
-        <p class="hint"><a href="#item-009-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-009-answer" class="page page-answer" data-source="Sample Resit 2024-07-24" data-index="9" data-total="59">
@@ -591,7 +596,7 @@ For example, in object detection, a convolutional neural network can be used to 
 
 A detection model then combines these visual features with prediction heads that output class labels and bounding-box coordinates. The result is a model that can say “cat” and “dog” while also drawing separate boxes around each object. This makes CNNs especially effective for computer vision because they preserve spatial information, exploit local image structure, and learn hierarchical visual representations directly from raw pixels.</p>
         </div>
-        <p class="hint"><a href="#item-009-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-010-question" class="page page-question" data-source="Sample Resit 2024-07-24" data-index="10" data-total="59">
@@ -608,7 +613,7 @@ A detection model then combines these visual features with prediction heads that
 - What makes recurrent neurons and Recurrent Neural Networks (RNNs) particularly effective in processing sequences?
 - What is their main limitation and how Long Short-Term Memory (LSTM) and Gated Recurrent Unit (GRU) help address it?</p>
         </div>
-        <p class="hint"><a href="#item-010-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-010-answer" class="page page-answer" data-source="Sample Resit 2024-07-24" data-index="10" data-total="59">
@@ -629,7 +634,7 @@ The main limitation of standard RNNs is that they struggle to learn long-range d
 
 LSTMs and GRUs address this limitation by adding gating mechanisms that control what information is kept, updated, or forgotten. An LSTM uses a cell state plus input, forget, and output gates to preserve important information over longer time spans while discarding irrelevant details. A GRU is a simpler variant with reset and update gates, often requiring fewer parameters while still improving long-term memory compared with a basic RNN. In exam terms, RNNs provide sequential memory, but LSTMs and GRUs make that memory more selective and stable, enabling better learning from longer sequences.</p>
         </div>
-        <p class="hint"><a href="#item-010-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-011-question" class="page page-question" data-source="Sample Resit 2024-07-24" data-index="11" data-total="59">
@@ -646,7 +651,7 @@ LSTMs and GRUs address this limitation by adding gating mechanisms that control 
 - What makes geometric deep learning on graphs challenging and why conventional CNNs and RNNs are not directly applicable to graphs/networks?
 - (a) Name the task. (b) Name the task.</p>
         </div>
-        <p class="hint"><a href="#item-011-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-011-answer" class="page page-answer" data-source="Sample Resit 2024-07-24" data-index="11" data-total="59">
@@ -667,7 +672,7 @@ Geometric deep learning on graphs is challenging because graphs are irregular, n
 
 Conventional CNNs and RNNs are not directly applicable because they assume structure that graphs do not naturally have. CNNs rely on regular spatial grids, fixed-size filters, and shared local neighborhoods, as in pixels of an image. RNNs assume sequential order, as in text or time series. Graph neural networks adapt deep learning to networks by passing and aggregating messages between neighboring nodes, allowing the model to learn from both features and graph connectivity.</p>
         </div>
-        <p class="hint"><a href="#item-011-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-012-question" class="page page-question" data-source="Chapter 10" data-index="12" data-total="59">
@@ -684,7 +689,7 @@ Conventional CNNs and RNNs are not directly applicable because they assume struc
 - Which parts of the biological system have loose analogues in artificial neurons or layers?
 - Why should this analogy not be taken too literally?</p>
         </div>
-        <p class="hint"><a href="#item-012-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-012-answer" class="page page-answer" data-source="Chapter 10" data-index="12" data-total="59">
@@ -705,7 +710,7 @@ Learning also has a biological inspiration. In brains, synaptic strengths can ch
 
 However, the analogy should not be taken too literally. Artificial neurons are extremely simplified mathematical units, while biological neurons are complex living cells with chemical, electrical, temporal, and structural dynamics. Real brains are not organized like clean feedforward layers, do not use backpropagation in the standard engineering sense, and involve many mechanisms beyond weighted sums and activations. The biological neuron is best understood as the historical inspiration for neural networks, not as a precise blueprint for how modern deep learning systems actually work.</p>
         </div>
-        <p class="hint"><a href="#item-012-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-013-question" class="page page-question" data-source="Chapter 10" data-index="13" data-total="59">
@@ -722,7 +727,7 @@ However, the analogy should not be taken too literally. Artificial neurons are e
 - Which parts of the biological system have loose analogues in artificial neurons or layers?
 - Why should this analogy not be taken too literally?</p>
         </div>
-        <p class="hint"><a href="#item-013-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-013-answer" class="page page-answer" data-source="Chapter 10" data-index="13" data-total="59">
@@ -743,7 +748,7 @@ This analogy is useful because it explains the broad design intuition behind dee
 
 The analogy should not be taken too literally. Artificial neurons are extremely simplified mathematical functions, while biological neurons are complex living cells with chemistry, timing, feedback loops, different neuron types, and rich dynamics. Deep networks are usually trained with algorithms such as backpropagation and gradient descent, which are engineering methods rather than direct models of how the brain learns. So the figure is best understood as inspiration for the architecture of connected layers, not as a claim that modern deep learning faithfully reproduces the human cortex.</p>
         </div>
-        <p class="hint"><a href="#item-013-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-014-question" class="page page-question" data-source="Chapter 10" data-index="14" data-total="59">
@@ -760,7 +765,7 @@ The analogy should not be taken too literally. Artificial neurons are extremely 
 - Explain how artificial neurons can implement simple logical rules.
 - What limitation appears when a problem is not linearly separable?</p>
         </div>
-        <p class="hint"><a href="#item-014-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-014-answer" class="page page-answer" data-source="Chapter 10" data-index="14" data-total="59">
@@ -781,7 +786,7 @@ This illustrates the basic idea behind neural computation: neurons are simple de
 
 The key limitation is that a single artificial neuron can only solve problems that are linearly separable. This means there must be a straight line, plane, or hyperplane that separates the input patterns producing output 1 from those producing output 0. Logical functions like AND and OR are linearly separable, but problems such as XOR are not. For non-linearly separable problems, a network needs hidden layers or multiple neurons combined together, allowing it to build more complex decision boundaries.</p>
         </div>
-        <p class="hint"><a href="#item-014-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-015-question" class="page page-question" data-source="Chapter 10" data-index="15" data-total="59">
@@ -798,7 +803,7 @@ The key limitation is that a single artificial neuron can only solve problems th
 - Explain the role of weights, inputs, bias, and threshold/step activation.
 - Why is this unit only able to learn linear decision boundaries?</p>
         </div>
-        <p class="hint"><a href="#item-015-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-015-answer" class="page page-answer" data-source="Chapter 10" data-index="15" data-total="59">
@@ -821,7 +826,7 @@ The threshold or step activation function converts the weighted sum into a discr
 
 This unit can only learn linear decision boundaries because its decision depends on whether a weighted sum is above or below a threshold. Geometrically, that condition forms a straight line in two dimensions, a plane in three dimensions, or a hyperplane in higher dimensions. Therefore, a single TLU can solve problems where the classes are linearly separable, but it cannot by itself model nonlinear patterns such as XOR.</p>
         </div>
-        <p class="hint"><a href="#item-015-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-016-question" class="page page-question" data-source="Chapter 10" data-index="16" data-total="59">
@@ -838,7 +843,7 @@ This unit can only learn linear decision boundaries because its decision depends
 - What is the role of the bias neuron and the output neurons?
 - For which type of classification problem is this architecture suitable, and where does it fail?</p>
         </div>
-        <p class="hint"><a href="#item-016-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-016-answer" class="page page-answer" data-source="Chapter 10" data-index="16" data-total="59">
@@ -859,7 +864,7 @@ Each output neuron computes a weighted sum of the inputs plus the bias, then app
 
 This architecture is suitable for linearly separable classification problems: cases where each class can be separated from the others using straight-line decision boundaries in the input space. It fails when the data is not linearly separable, such as the classic XOR problem, because a single-layer Perceptron cannot learn curved or layered decision boundaries. To handle those problems, we need multilayer neural networks with hidden layers and nonlinear activation functions.</p>
         </div>
-        <p class="hint"><a href="#item-016-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-017-question" class="page page-question" data-source="Chapter 10" data-index="17" data-total="59">
@@ -876,7 +881,7 @@ This architecture is suitable for linearly separable classification problems: ca
 - Use the MLP in the figure to explain how a hidden layer changes the representation.
 - What does this example show about the value of depth and nonlinear activations?</p>
         </div>
-        <p class="hint"><a href="#item-017-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-017-answer" class="page page-answer" data-source="Chapter 10" data-index="17" data-total="59">
@@ -897,7 +902,7 @@ This means the hidden layer changes the representation: the data that was not se
 
 The example shows why depth and nonlinear activations are central to neural networks. Without nonlinear activations, stacking layers would still be equivalent to one linear transformation, so the model would remain unable to solve XOR. With nonlinear hidden units, even a small multilayer perceptron can represent decision boundaries that a single linear classifier cannot. This is the basic intuition behind deep learning: deeper networks build increasingly useful representations, allowing them to model complex patterns from simpler components.</p>
         </div>
-        <p class="hint"><a href="#item-017-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-018-question" class="page page-question" data-source="Chapter 10" data-index="18" data-total="59">
@@ -914,7 +919,7 @@ The example shows why depth and nonlinear activations are central to neural netw
 - What is the role of the bias neuron and the output neurons?
 - For which type of classification problem is this architecture suitable, and where does it fail?</p>
         </div>
-        <p class="hint"><a href="#item-018-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-018-answer" class="page page-answer" data-source="Chapter 10" data-index="18" data-total="59">
@@ -935,7 +940,7 @@ The three output neurons represent three possible target classes. In a classific
 
 This architecture is suitable for multiclass classification problems where each example belongs to exactly one of three classes. The hidden layer allows the model to learn nonlinear decision boundaries, so it can solve problems that a single-layer Perceptron cannot, such as patterns that are not linearly separable. However, it fails or performs poorly if the architecture, activation functions, or training method are inadequate: a plain Perceptron-style step activation is not compatible with gradient-based learning, and even an MLP can underfit very complex data if it has too few neurons or layers.</p>
         </div>
-        <p class="hint"><a href="#item-018-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-019-question" class="page page-question" data-source="Chapter 10" data-index="19" data-total="59">
@@ -952,7 +957,7 @@ This architecture is suitable for multiclass classification problems where each 
 - Why do neural networks need nonlinear activation functions?
 - What practical issues can arise from saturating or zero-gradient regions?</p>
         </div>
-        <p class="hint"><a href="#item-019-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-019-answer" class="page page-answer" data-source="Chapter 10" data-index="19" data-total="59">
@@ -973,7 +978,7 @@ Neural networks need nonlinear activation functions because without them, stacki
 
 The main practical issue with saturating regions is the vanishing gradient problem: when sigmoid or tanh units operate far from zero, their derivatives are near zero, so weight updates become tiny and earlier layers learn very slowly. Zero-gradient regions create a similar problem. For example, a ReLU neuron receiving consistently negative inputs can become “dead,” producing zero output and receiving no gradient update. These issues affect training speed, stability, and final model quality, which is why modern deep networks often use ReLU variants, careful initialization, normalization, and suitable learning rates.</p>
         </div>
-        <p class="hint"><a href="#item-019-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-020-question" class="page page-question" data-source="Chapter 10" data-index="20" data-total="59">
@@ -990,7 +995,7 @@ The main practical issue with saturating regions is the vanishing gradient probl
 - Why is ReLU commonly used in hidden layers?
 - What does the softmax layer output, and when is it appropriate?</p>
         </div>
-        <p class="hint"><a href="#item-020-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-020-answer" class="page page-answer" data-source="Chapter 10" data-index="20" data-total="59">
@@ -1011,7 +1016,7 @@ The final layer computes one score, or logit, for each possible class. These log
 
 Softmax is appropriate for single-label multiclass classification, where each example belongs to exactly one class among several mutually exclusive choices. It is usually paired with cross-entropy loss during training. It is not the right output for multilabel classification, where more than one class can be true at the same time; in that case, independent sigmoid outputs are typically used instead.</p>
         </div>
-        <p class="hint"><a href="#item-020-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-021-question" class="page page-question" data-source="Chapter 14" data-index="21" data-total="59">
@@ -1028,7 +1033,7 @@ Softmax is appropriate for single-label multiclass classification, where each ex
 - Which parts of the biological system have loose analogues in artificial neurons or layers?
 - Why should this analogy not be taken too literally?</p>
         </div>
-        <p class="hint"><a href="#item-021-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-021-answer" class="page page-answer" data-source="Chapter 14" data-index="21" data-total="59">
@@ -1049,7 +1054,7 @@ The figure also suggests the idea behind convolutional neural networks. Early vi
 
 However, the analogy should not be taken too literally. Artificial neurons are extremely simplified mathematical functions, while biological neurons are complex living cells with chemical, electrical, temporal, and structural dynamics. Brains also learn using mechanisms very different from standard backpropagation, and biological perception involves attention, memory, embodiment, feedback loops, and many specialized brain systems. The biological analogy is useful as intuition, but modern neural networks are engineering models inspired by the brain, not faithful simulations of it.</p>
         </div>
-        <p class="hint"><a href="#item-021-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-022-question" class="page page-question" data-source="Chapter 14" data-index="22" data-total="59">
@@ -1066,7 +1071,7 @@ However, the analogy should not be taken too literally. Artificial neurons are e
 - Why do CNNs connect neurons to local image regions instead of every input pixel?
 - How does this design help with images compared with a fully connected network?</p>
         </div>
-        <p class="hint"><a href="#item-022-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-022-answer" class="page page-answer" data-source="Chapter 14" data-index="22" data-total="59">
@@ -1087,7 +1092,7 @@ This design makes CNNs much more efficient than fully connected networks. A full
 
 For images, this gives CNNs an important advantage: they can learn visual features that are useful wherever they appear. The same filter can detect a vertical edge, texture, or shape in different parts of the image, which makes the model better at recognizing objects despite changes in position. This is why CNNs are especially well suited for image tasks compared with ordinary fully connected networks.</p>
         </div>
-        <p class="hint"><a href="#item-022-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-023-question" class="page page-question" data-source="Chapter 14" data-index="23" data-total="59">
@@ -1104,7 +1109,7 @@ For images, this gives CNNs an important advantage: they can learn visual featur
 - What is zero padding, and how does it affect the output feature-map size?
 - Why might a CNN designer choose padding instead of shrinking the feature maps at every layer?</p>
         </div>
-        <p class="hint"><a href="#item-023-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-023-answer" class="page page-answer" data-source="Chapter 14" data-index="23" data-total="59">
@@ -1125,7 +1130,7 @@ Zero padding means adding extra rows and columns of zeros around the border of t
 
 A CNN designer may choose padding to avoid shrinking feature maps too quickly as layers get deeper. This preserves spatial information near the image boundaries, allows edge and corner features to influence later layers, and gives the network more opportunities to combine local patterns into higher-level representations. Padding is especially useful in deep CNNs because repeated unpadded convolutions would rapidly reduce the feature-map size, potentially discarding useful information before the network has learned enough from it.</p>
         </div>
-        <p class="hint"><a href="#item-023-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-024-question" class="page page-question" data-source="Chapter 14" data-index="24" data-total="59">
@@ -1142,7 +1147,7 @@ A CNN designer may choose padding to avoid shrinking feature maps too quickly as
 - What happens to spatial resolution when stride increases?
 - What tradeoff does stride create between computation, detail, and invariance?</p>
         </div>
-        <p class="hint"><a href="#item-024-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-024-answer" class="page page-answer" data-source="Chapter 14" data-index="24" data-total="59">
@@ -1163,7 +1168,7 @@ The main benefit is computational efficiency. Larger strides reduce the number o
 
 The tradeoff is that some fine-grained spatial detail is lost. Because the filter or pooling window skips positions, small patterns or precise object locations may be less accurately represented. At the same time, this loss of precision can be useful: larger strides make the representation more invariant to small shifts in the input, meaning the network becomes less sensitive to exactly where a feature appears. Thus, stride balances computation and robustness against spatial detail and localization accuracy.</p>
         </div>
-        <p class="hint"><a href="#item-024-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-025-question" class="page page-question" data-source="Chapter 14" data-index="25" data-total="59">
@@ -1180,7 +1185,7 @@ The tradeoff is that some fine-grained spatial detail is lost. Because the filte
 - What does a learned filter detect, and why are learned filters preferable to fixed hand-designed filters?
 - How do feature maps contribute to deeper CNN representations?</p>
         </div>
-        <p class="hint"><a href="#item-025-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-025-answer" class="page page-answer" data-source="Chapter 14" data-index="25" data-total="59">
@@ -1201,7 +1206,7 @@ Learned filters are preferable to fixed hand-designed filters because the networ
 
 Feature maps become the building blocks for deeper CNN representations. Early layers usually detect simple visual features such as edges and textures; middle layers combine those into motifs such as shapes or object parts; deeper layers combine them into higher-level concepts relevant to prediction. In this way, CNNs transform raw pixels into increasingly abstract, task-specific representations.</p>
         </div>
-        <p class="hint"><a href="#item-025-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-026-question" class="page page-question" data-source="Chapter 14" data-index="26" data-total="59">
@@ -1218,7 +1223,7 @@ Feature maps become the building blocks for deeper CNN representations. Early la
 - What does a learned filter detect, and why are learned filters preferable to fixed hand-designed filters?
 - How do feature maps contribute to deeper CNN representations?</p>
         </div>
-        <p class="hint"><a href="#item-026-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-026-answer" class="page page-answer" data-source="Chapter 14" data-index="26" data-total="59">
@@ -1239,7 +1244,7 @@ Each filter produces its own feature map, so a convolutional layer creates a sta
 
 Deeper CNN layers build on earlier feature maps rather than on raw pixels alone. A second convolutional layer can combine lower-level maps from the first layer to detect more complex patterns, such as motifs, object parts, or class-specific structures. This hierarchical composition is what makes CNNs powerful: they progressively convert simple image signals into increasingly abstract, task-relevant representations.</p>
         </div>
-        <p class="hint"><a href="#item-026-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-027-question" class="page page-question" data-source="Chapter 14" data-index="27" data-total="59">
@@ -1256,7 +1261,7 @@ Deeper CNN layers build on earlier feature maps rather than on raw pixels alone.
 - What is zero padding, and how does it affect the output feature-map size?
 - Why might a CNN designer choose padding instead of shrinking the feature maps at every layer?</p>
         </div>
-        <p class="hint"><a href="#item-027-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-027-answer" class="page page-answer" data-source="Chapter 14" data-index="27" data-total="59">
@@ -1277,7 +1282,7 @@ Zero padding means adding artificial zeros around the input before applying the 
 
 A CNN designer may choose padding to avoid losing too much information at the borders of an image or sequence. Without padding, each convolution reduces the feature-map size, and after many layers the representation can become very small, especially near the edges where fewer filters are applied. Padding lets deeper layers preserve more spatial structure, makes feature maps easier to align across layers, and allows the network to learn from edge and corner patterns instead of systematically discarding them.</p>
         </div>
-        <p class="hint"><a href="#item-027-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-028-question" class="page page-question" data-source="Chapter 14" data-index="28" data-total="59">
@@ -1294,7 +1299,7 @@ A CNN designer may choose padding to avoid losing too much information at the bo
 - What is zero padding, and how does it affect the output feature-map size?
 - Why might a CNN designer choose padding instead of shrinking the feature maps at every layer?</p>
         </div>
-        <p class="hint"><a href="#item-028-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-028-answer" class="page page-answer" data-source="Chapter 14" data-index="28" data-total="59">
@@ -1315,7 +1320,7 @@ In a **convolution operation**, a learned filter also slides across the input, b
 
 A CNN designer may choose padding to avoid losing too much spatial information too early. If every convolution shrinks the feature maps, deeper layers may quickly become very small, making it harder to preserve information about object location and fine details. Padding also allows border pixels to influence the learned representation more fairly, since without padding they are included in fewer convolution windows than central pixels. In practice, padding helps build deeper CNNs while keeping feature-map sizes manageable and retaining more useful spatial structure.</p>
         </div>
-        <p class="hint"><a href="#item-028-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-029-question" class="page page-question" data-source="Chapter 14" data-index="29" data-total="59">
@@ -1332,7 +1337,7 @@ A CNN designer may choose padding to avoid losing too much spatial information t
 - Why is some invariance useful for image classification?
 - When could too much invariance be harmful for a vision task?</p>
         </div>
-        <p class="hint"><a href="#item-029-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-029-answer" class="page page-answer" data-source="Chapter 14" data-index="29" data-total="59">
@@ -1353,7 +1358,7 @@ Some invariance therefore improves generalization. It allows the model to focus 
 
 However, too much invariance can be harmful when the location or fine spatial arrangement matters. In medical imaging, a small shift in a lesion’s position may be clinically meaningful. In object detection, segmentation, facial landmark detection, autonomous driving, or reading text, the model must preserve spatial detail because the task depends not only on recognizing an object but also on knowing where it is and how its parts are arranged. In short, classification benefits from moderate invariance, while localization-heavy tasks require more spatial precision.</p>
         </div>
-        <p class="hint"><a href="#item-029-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-030-question" class="page page-question" data-source="Chapter 14" data-index="30" data-total="59">
@@ -1370,7 +1375,7 @@ However, too much invariance can be harmful when the location or fine spatial ar
 - What is the purpose of pooling layers in a CNN architecture?
 - What information can be lost when pooling is used too aggressively?</p>
         </div>
-        <p class="hint"><a href="#item-030-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-030-answer" class="page page-answer" data-source="Chapter 14" data-index="30" data-total="59">
@@ -1391,7 +1396,7 @@ More generally, pooling layers in CNNs reduce the size of feature representation
 
 If pooling is used too aggressively, the CNN can lose important information about **where** features are located and how they are arranged relative to one another. Fine spatial details, boundaries, small objects, and subtle patterns may disappear. This can hurt tasks that require precise localization or detailed structure, because the model may know that a feature exists but no longer know exactly where it is or how it relates to other features.</p>
         </div>
-        <p class="hint"><a href="#item-030-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-031-question" class="page page-question" data-source="Chapter 14" data-index="31" data-total="59">
@@ -1408,7 +1413,7 @@ If pooling is used too aggressively, the CNN can lose important information abou
 - How do convolution and pooling layers transform raw pixels into useful features?
 - Use the figure to explain the concept of end-to-end learning.</p>
         </div>
-        <p class="hint"><a href="#item-031-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-031-answer" class="page page-answer" data-source="Chapter 14" data-index="31" data-total="59">
@@ -1429,7 +1434,7 @@ Pooling layers reduce the size of the feature maps while preserving the most imp
 
 The figure also illustrates end-to-end learning. Instead of manually designing features before classification, the CNN learns the entire pipeline from input image to final output using training data. During training, errors from the final prediction are propagated backward through the fully connected, pooling, and convolution layers, allowing the filters and weights to improve automatically. In other words, the same model learns both feature extraction and decision-making as one integrated system.</p>
         </div>
-        <p class="hint"><a href="#item-031-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-032-question" class="page page-question" data-source="Chapter 14" data-index="32" data-total="59">
@@ -1446,7 +1451,7 @@ The figure also illustrates end-to-end learning. Instead of manually designing f
 - Why does data augmentation help deep learning models generalize?
 - Give examples of image transformations that are useful, and one transformation that could change the label.</p>
         </div>
-        <p class="hint"><a href="#item-032-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-032-answer" class="page page-answer" data-source="Chapter 14" data-index="32" data-total="59">
@@ -1467,7 +1472,7 @@ Useful image augmentations include small rotations, horizontal or vertical shift
 
 However, not every transformation is safe. A transformation changes the label if it alters the meaning of the image. For example, vertically flipping a handwritten digit 6 could make it look like a 9, and rotating some medical or traffic-sign images could create a different class or an unrealistic example. Good augmentation must preserve the correct label while increasing realistic variation.</p>
         </div>
-        <p class="hint"><a href="#item-032-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-033-question" class="page page-question" data-source="Chapter 14" data-index="33" data-total="59">
@@ -1484,7 +1489,7 @@ However, not every transformation is safe. A transformation changes the label if
 - Why does it use parallel branches with different kernel sizes?
 - How do 1 x 1 convolutions help control computation and parameters?</p>
         </div>
-        <p class="hint"><a href="#item-033-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-033-answer" class="page page-answer" data-source="Chapter 14" data-index="33" data-total="59">
@@ -1505,7 +1510,7 @@ The `1 x 1` convolutions are especially important because they act as bottleneck
 
 Conceptually, the Inception module improves efficiency by making the network wider without making computation explode. It lets the model learn multi-scale features in the same layer while using `1 x 1` convolutions to keep the parameter count manageable. This is why Inception-style architectures can be deep and expressive while remaining more computationally efficient than simply stacking many large convolutions.</p>
         </div>
-        <p class="hint"><a href="#item-033-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-034-question" class="page page-question" data-source="Chapter 14" data-index="34" data-total="59">
@@ -1522,7 +1527,7 @@ Conceptually, the Inception module improves efficiency by making the network wid
 - How do Inception modules make GoogLeNet deeper while remaining parameter-efficient?
 - What problem was this architecture trying to solve compared with simpler CNN stacks?</p>
         </div>
-        <p class="hint"><a href="#item-034-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-034-answer" class="page page-answer" data-source="Chapter 14" data-index="34" data-total="59">
@@ -1543,7 +1548,7 @@ The key efficiency trick is the use of 1 x 1 convolutions as bottleneck layers. 
 
 The architecture was designed to solve a limitation of simpler CNN stacks: simply adding more large convolutional layers made networks expensive, memory-heavy, and prone to overfitting or inefficient computation. GoogLeNet instead increases depth and feature diversity in a controlled way. It learns rich multi-scale visual representations while keeping the model relatively parameter-efficient, making it practical for large-scale image classification such as ImageNet.</p>
         </div>
-        <p class="hint"><a href="#item-034-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-035-question" class="page page-question" data-source="Chapter 14" data-index="35" data-total="59">
@@ -1560,7 +1565,7 @@ The architecture was designed to solve a limitation of simpler CNN stacks: simpl
 - Why do skip connections help train very deep neural networks?
 - What must be handled when the input and output dimensions of a residual block differ?</p>
         </div>
-        <p class="hint"><a href="#item-035-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-035-answer" class="page page-answer" data-source="Chapter 14" data-index="35" data-total="59">
@@ -1581,7 +1586,7 @@ They also improve gradient flow during backpropagation. The shortcut creates a m
 
 When the input and output dimensions of a residual block differ, the addition \(f(x) + x\) is not directly valid. The shortcut branch must be adjusted so that its shape matches the block output, commonly using a linear projection such as a \(1 \times 1\) convolution, sometimes with stride or padding changes. The key requirement is that both tensors being added have compatible dimensions.</p>
         </div>
-        <p class="hint"><a href="#item-035-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-036-question" class="page page-question" data-source="Chapter 14" data-index="36" data-total="59">
@@ -1598,7 +1603,7 @@ When the input and output dimensions of a residual block differ, the addition \(
 - Why do skip connections help train very deep neural networks?
 - What must be handled when the input and output dimensions of a residual block differ?</p>
         </div>
-        <p class="hint"><a href="#item-036-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-036-answer" class="page page-answer" data-source="Chapter 14" data-index="36" data-total="59">
@@ -1619,7 +1624,7 @@ Skip connections help very deep networks because they improve gradient flow duri
 
 When the input and output dimensions of a residual block differ, the shortcut path cannot simply add \(x\) to \(F(x)\), because addition requires matching shapes. The model must align the dimensions, commonly using a linear projection such as a \(1 \times 1\) convolution, sometimes with stride if the spatial size changes. This ensures that the skipped input and the block output have compatible width, height, and channel depth before they are added.</p>
         </div>
-        <p class="hint"><a href="#item-036-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-037-question" class="page page-question" data-source="Chapter 14" data-index="37" data-total="59">
@@ -1636,7 +1641,7 @@ When the input and output dimensions of a residual block differ, the shortcut pa
 - Why do skip connections help train very deep neural networks?
 - What must be handled when the input and output dimensions of a residual block differ?</p>
         </div>
-        <p class="hint"><a href="#item-037-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-037-answer" class="page page-answer" data-source="Chapter 14" data-index="37" data-total="59">
@@ -1657,7 +1662,7 @@ Skip connections help very deep networks because they improve gradient flow duri
 
 When the input and output dimensions of a residual block differ, the skip path cannot simply add \(x\) to \(F(x)\), because element-wise addition requires matching shapes. This happens, for example, when the number of feature maps changes from 64 to 128 or when spatial resolution is reduced using stride 2. ResNet handles this by transforming the skip connection, often with a \(1 \times 1\) convolution and appropriate stride, so that the shortcut output has the same height, width, and channel count as the residual branch before addition.</p>
         </div>
-        <p class="hint"><a href="#item-037-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-038-question" class="page page-question" data-source="Chapter 14" data-index="38" data-total="59">
@@ -1674,7 +1679,7 @@ When the input and output dimensions of a residual block differ, the skip path c
 - Why do skip connections help train very deep neural networks?
 - What must be handled when the input and output dimensions of a residual block differ?</p>
         </div>
-        <p class="hint"><a href="#item-038-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-038-answer" class="page page-answer" data-source="Chapter 14" data-index="38" data-total="59">
@@ -1695,7 +1700,7 @@ Skip connections also improve gradient flow during backpropagation. In very deep
 
 When the input and output dimensions differ, the skip path cannot simply add the original input to the main path output. The feature map size, number of channels, or both must be matched first. In the figure, this is handled by a `1x1` convolution on the skip connection, with stride `2`, so the shortcut changes both the spatial resolution and the depth to match the residual block’s output. Once the dimensions agree, the two paths can be added element by element, followed by ReLU activation.</p>
         </div>
-        <p class="hint"><a href="#item-038-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-039-question" class="page page-question" data-source="Chapter 14" data-index="39" data-total="59">
@@ -1712,7 +1717,7 @@ When the input and output dimensions differ, the skip path cannot simply add the
 - How does it differ from a standard convolution?
 - Why is this operation useful for efficient CNN architectures?</p>
         </div>
-        <p class="hint"><a href="#item-039-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-039-answer" class="page page-answer" data-source="Chapter 14" data-index="39" data-total="59">
@@ -1735,7 +1740,7 @@ This is useful because it dramatically reduces the number of parameters and mult
 
 Efficient CNN architectures such as MobileNet rely on this idea to run well on phones, embedded devices, and other resource-constrained environments. The tradeoff is that the layer is slightly less expressive than a full convolution, but in practice it often gives a strong accuracy-efficiency balance.</p>
         </div>
-        <p class="hint"><a href="#item-039-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-040-question" class="page page-question" data-source="Chapter 14" data-index="40" data-total="59">
@@ -1752,7 +1757,7 @@ Efficient CNN architectures such as MobileNet rely on this idea to run well on p
 - Why does it use parallel branches with different kernel sizes?
 - How do 1 x 1 convolutions help control computation and parameters?</p>
         </div>
-        <p class="hint"><a href="#item-040-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-040-answer" class="page page-answer" data-source="Chapter 14" data-index="40" data-total="59">
@@ -1773,7 +1778,7 @@ The reason for using parallel branches with different kernel sizes is that usefu
 
 In the SE-Inception version shown, the Inception module output is passed through an SE block, or squeeze-and-excitation block. The SE block learns channel-wise importance weights and multiplies them back into the feature maps, so the network can emphasize the most informative channels and suppress less useful ones. Together, Inception provides multi-scale feature extraction, while the SE block adds adaptive channel attention.</p>
         </div>
-        <p class="hint"><a href="#item-040-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-041-question" class="page page-question" data-source="Chapter 14" data-index="41" data-total="59">
@@ -1790,7 +1795,7 @@ In the SE-Inception version shown, the Inception module output is passed through
 - How does feature-map recalibration change the information passed forward?
 - Why can channel attention improve a CNN without changing the spatial resolution?</p>
         </div>
-        <p class="hint"><a href="#item-041-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-041-answer" class="page page-answer" data-source="Chapter 14" data-index="41" data-total="59">
@@ -1811,7 +1816,7 @@ Feature-map recalibration means multiplying each original feature map by its cor
 
 Channel attention can improve a CNN without changing spatial resolution because it operates across channels, not across pixel positions. The height and width of each feature map remain the same; only the strength of each channel is adjusted. This lets the network learn which types of detected features matter most for a given input, improving representation quality with relatively little extra computation.</p>
         </div>
-        <p class="hint"><a href="#item-041-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-042-question" class="page page-question" data-source="Chapter 14" data-index="42" data-total="59">
@@ -1828,7 +1833,7 @@ Channel attention can improve a CNN without changing spatial resolution because 
 - Explain the main components and how information flows through them.
 - Describe why this concept matters for deep learning and give one practical use case.</p>
         </div>
-        <p class="hint"><a href="#item-042-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-042-answer" class="page page-answer" data-source="Chapter 14" data-index="42" data-total="59">
@@ -1849,7 +1854,7 @@ The descriptor then passes through two dense layers: typically one reduces the d
 
 This matters because SE blocks give CNNs a lightweight form of adaptive feature attention. They often improve accuracy with relatively small computational overhead, making networks better at focusing on informative patterns. A practical use case is image classification, such as medical image analysis, where the model can emphasize channels representing diagnostically relevant structures while down-weighting background or irrelevant texture.</p>
         </div>
-        <p class="hint"><a href="#item-042-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-043-question" class="page page-question" data-source="Chapter 14" data-index="43" data-total="59">
@@ -1866,7 +1871,7 @@ This matters because SE blocks give CNNs a lightweight form of adaptive feature 
 - Why is IoU useful for object detection?
 - How would changing the IoU threshold affect precision and recall?</p>
         </div>
-        <p class="hint"><a href="#item-043-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-043-answer" class="page page-answer" data-source="Chapter 14" data-index="43" data-total="59">
@@ -1887,7 +1892,7 @@ In evaluation, we usually set an IoU threshold, such as 0.5 or 0.75. If the pred
 
 Changing the IoU threshold affects precision and recall. Raising the threshold usually lowers recall because fewer predictions qualify as correct, so more objects are counted as missed. It can also lower measured precision because predictions that were previously true positives become false positives. Lowering the threshold makes the metric more forgiving, often increasing recall and sometimes precision, but it may reward boxes that only roughly cover the object.</p>
         </div>
-        <p class="hint"><a href="#item-043-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-044-question" class="page page-question" data-source="Chapter 14" data-index="44" data-total="59">
@@ -1904,7 +1909,7 @@ Changing the IoU threshold affects precision and recall. Raising the threshold u
 - What does each spatial grid location or sliding-window prediction need to output?
 - Why is this harder than image classification?</p>
         </div>
-        <p class="hint"><a href="#item-044-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-044-answer" class="page page-answer" data-source="Chapter 14" data-index="44" data-total="59">
@@ -1925,7 +1930,7 @@ Each spatial location must output more than just a class label. It typically pre
 
 This is harder than image classification because classification answers one question: “What is in this image?” Object detection must answer several questions at once: “What objects are present, where are they, how many are there, and what class is each one?” The model must handle different object sizes, overlapping objects, partial visibility, background clutter, and duplicate detections. It also requires both semantic understanding and precise localization, making the learning task significantly more complex than assigning a single label to the entire image.</p>
         </div>
-        <p class="hint"><a href="#item-044-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-045-question" class="page page-question" data-source="Chapter 14" data-index="45" data-total="59">
@@ -1942,7 +1947,7 @@ This is harder than image classification because classification answers one ques
 - Why can it process different image sizes?
 - How does this idea support dense prediction tasks such as detection or segmentation?</p>
         </div>
-        <p class="hint"><a href="#item-045-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-045-answer" class="page page-answer" data-source="Chapter 14" data-index="45" data-total="59">
@@ -1963,7 +1968,7 @@ For the smaller image, the final output is a `1 x 1` set of feature maps, which 
 
 This is the key idea behind dense prediction tasks. Instead of producing a single label for an entire image, a fully convolutional network can produce a grid of predictions aligned with image regions. In object detection, those grid cells can indicate where objects are likely to be; in segmentation, each spatial output can contribute to labeling pixels or regions. Fully convolutional design therefore turns image-level CNNs into efficient location-aware predictors.</p>
         </div>
-        <p class="hint"><a href="#item-045-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-046-question" class="page page-question" data-source="Chapter 14" data-index="46" data-total="59">
@@ -1980,7 +1985,7 @@ This is the key idea behind dense prediction tasks. Instead of producing a singl
 - How is semantic segmentation different from classification and object detection?
 - Why is preserving spatial detail important for this task?</p>
         </div>
-        <p class="hint"><a href="#item-046-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-046-answer" class="page page-answer" data-source="Chapter 14" data-index="46" data-total="59">
@@ -2003,7 +2008,7 @@ Preserving spatial detail is essential because the model must produce an output 
 
 In practical terms, semantic segmentation is useful when decisions depend on the precise shape and position of scene elements. In autonomous driving, medical imaging, satellite analysis, or retail shelf monitoring, knowing that an object exists is not enough; the system must understand exactly where each relevant region begins and ends.</p>
         </div>
-        <p class="hint"><a href="#item-046-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-047-question" class="page page-question" data-source="Chapter 14" data-index="47" data-total="59">
@@ -2020,7 +2025,7 @@ In practical terms, semantic segmentation is useful when decisions depend on the
 - Why do segmentation networks need to recover spatial resolution?
 - How do skip connections from lower layers improve dense predictions?</p>
         </div>
-        <p class="hint"><a href="#item-047-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-047-answer" class="page page-answer" data-source="Chapter 14" data-index="47" data-total="59">
@@ -2041,7 +2046,7 @@ Upsampling layers help convert compact, high-level feature maps back into full-r
 
 Skip connections from lower layers improve dense predictions by bringing back fine-grained spatial information that was weakened or lost during downsampling. Early layers usually preserve edges, textures, contours, and precise positions, while deeper layers provide more abstract semantic meaning. By combining lower-layer detail with higher-layer context, segmentation networks can produce outputs that are both semantically accurate and spatially sharp. This is especially important around object boundaries, small objects, and thin structures, where coarse upsampling alone often gives blurry or misaligned predictions.</p>
         </div>
-        <p class="hint"><a href="#item-047-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-048-question" class="page page-question" data-source="Chapter 14" data-index="48" data-total="59">
@@ -2058,7 +2063,7 @@ Skip connections from lower layers improve dense predictions by bringing back fi
 - Why do segmentation networks need to recover spatial resolution?
 - How do skip connections from lower layers improve dense predictions?</p>
         </div>
-        <p class="hint"><a href="#item-048-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-048-answer" class="page page-answer" data-source="Chapter 14" data-index="48" data-total="59">
@@ -2079,7 +2084,7 @@ The skip connection in the figure brings information from an earlier, higher-res
 
 This improves dense predictions because the decoder does not have to reconstruct all spatial detail from a heavily compressed representation alone. Skip layers help restore sharper object boundaries, better align predictions with image edges, and preserve small details that might otherwise disappear during downsampling. In exam terms, the key idea is that skip connections fuse low-level spatial detail with high-level semantic features, making segmentation outputs more accurate at the pixel level.</p>
         </div>
-        <p class="hint"><a href="#item-048-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-049-question" class="page page-question" data-source="Chapter 15" data-index="49" data-total="59">
@@ -2096,7 +2101,7 @@ This improves dense predictions because the decoder does not have to reconstruct
 - What does it mean to unroll an RNN through time?
 - Why are RNNs suitable for sequence data, and what limitation do they have?</p>
         </div>
-        <p class="hint"><a href="#item-049-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-049-answer" class="page page-answer" data-source="Chapter 15" data-index="49" data-total="59">
@@ -2117,7 +2122,7 @@ RNNs are suitable for sequence data because they process inputs in order and mai
 
 Their main limitation is that standard RNNs struggle to learn long-range dependencies. As information is repeatedly passed through many time steps, gradients can vanish or explode during training, making it difficult for the network to remember events far back in the sequence. This is why more advanced recurrent architectures such as LSTMs and GRUs were developed: they add gating mechanisms to preserve useful information over longer periods.</p>
         </div>
-        <p class="hint"><a href="#item-049-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-050-question" class="page page-question" data-source="Chapter 15" data-index="50" data-total="59">
@@ -2134,7 +2139,7 @@ Their main limitation is that standard RNNs struggle to learn long-range depende
 - What does it mean to unroll an RNN through time?
 - Why are RNNs suitable for sequence data, and what limitation do they have?</p>
         </div>
-        <p class="hint"><a href="#item-050-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-050-answer" class="page page-answer" data-source="Chapter 15" data-index="50" data-total="59">
@@ -2155,7 +2160,7 @@ RNNs are suitable for sequence data because sequence problems often depend on or
 
 The main limitation of basic RNNs is that they struggle with long-term dependencies. During training, gradients must be propagated backward through many time steps, which can lead to vanishing or exploding gradients. As a result, a simple RNN may remember recent information reasonably well but fail to preserve important signals from much earlier in the sequence. This is why more advanced recurrent architectures such as LSTMs and GRUs were developed.</p>
         </div>
-        <p class="hint"><a href="#item-050-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-051-question" class="page page-question" data-source="Chapter 15" data-index="51" data-total="59">
@@ -2172,7 +2177,7 @@ The main limitation of basic RNNs is that they struggle with long-term dependenc
 - Why is hidden state useful when processing sequences?
 - Give an example task where the model should keep internal information that is not directly emitted at every time step.</p>
         </div>
-        <p class="hint"><a href="#item-051-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-051-answer" class="page page-answer" data-source="Chapter 15" data-index="51" data-total="59">
@@ -2193,7 +2198,7 @@ Hidden state is useful because sequence data often depends on context. In text, 
 
 For example, in sentiment analysis of a customer review, the model may read the sentence word by word but only emit the final sentiment at the end. While reading “The hotel looked beautiful, but the service was terrible,” the model should internally remember that “but” changes the direction of the sentiment and that “terrible” is highly negative. It does not need to emit a separate final judgment at every word, but it must keep that internal information in the hidden state so the final output is accurate.</p>
         </div>
-        <p class="hint"><a href="#item-051-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-052-question" class="page page-question" data-source="Chapter 15" data-index="52" data-total="59">
@@ -2210,7 +2215,7 @@ For example, in sentiment analysis of a customer review, the model may read the 
 - Give one application for each architecture.
 - Why is an encoder-decoder design useful for tasks such as translation?</p>
         </div>
-        <p class="hint"><a href="#item-052-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-052-answer" class="page page-answer" data-source="Chapter 15" data-index="52" data-total="59">
@@ -2231,7 +2236,7 @@ A vector-to-sequence model starts from a single input vector and generates a seq
 
 The encoder-decoder architecture combines two RNNs: an encoder that reads the input sequence and compresses its meaning into an internal representation, and a decoder that generates the output sequence from that representation. This is especially useful for translation because the input and output sequences often have different lengths and are not aligned word-for-word. For example, a French sentence may require a different word order in English, so the model first builds a representation of the full source sentence before generating the target sentence one token at a time.</p>
         </div>
-        <p class="hint"><a href="#item-052-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-053-question" class="page page-question" data-source="Chapter 15" data-index="53" data-total="59">
@@ -2248,7 +2253,7 @@ The encoder-decoder architecture combines two RNNs: an encoder that reads the in
 - Why can an unrolled RNN be trained with backpropagation?
 - What problem can occur when gradients must pass through many time steps, and how can it be mitigated?</p>
         </div>
-        <p class="hint"><a href="#item-053-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-053-answer" class="page page-answer" data-source="Chapter 15" data-index="53" data-total="59">
@@ -2271,7 +2276,7 @@ A major problem is that gradients may have to pass through many time steps. As t
 
 Common mitigations include gradient clipping for exploding gradients and gated architectures such as LSTMs or GRUs for vanishing gradients. LSTMs and GRUs use gates to control what information is stored, forgotten, and passed forward, making it easier for useful signals to survive across many time steps. In practice, truncated BPTT is also often used, where gradients are propagated back only a limited number of steps to reduce computation and improve stability.</p>
         </div>
-        <p class="hint"><a href="#item-053-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-054-question" class="page page-question" data-source="Chapter 15" data-index="54" data-total="59">
@@ -2288,7 +2293,7 @@ Common mitigations include gradient clipping for exploding gradients and gated a
 - What are the inputs and targets in a time-series forecasting problem?
 - How is sequence forecasting different from ordinary tabular prediction?</p>
         </div>
-        <p class="hint"><a href="#item-054-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-054-answer" class="page page-answer" data-source="Chapter 15" data-index="54" data-total="59">
@@ -2309,7 +2314,7 @@ This differs from ordinary tabular prediction because the order of the inputs ma
 
 A forecasting model must therefore capture dependencies across time: recent observations may matter more than older ones, but long-range patterns can also be important. This is why recurrent networks, 1D convolutional models, and attention-based sequence models are useful for time series: they are designed to learn from ordered sequences rather than from isolated feature vectors.</p>
         </div>
-        <p class="hint"><a href="#item-054-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-055-question" class="page page-question" data-source="Chapter 15" data-index="55" data-total="59">
@@ -2326,7 +2331,7 @@ A forecasting model must therefore capture dependencies across time: recent obse
 - What does it mean to unroll an RNN through time?
 - Why are RNNs suitable for sequence data, and what limitation do they have?</p>
         </div>
-        <p class="hint"><a href="#item-055-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-055-answer" class="page page-answer" data-source="Chapter 15" data-index="55" data-total="59">
@@ -2347,7 +2352,7 @@ RNNs are suitable for sequence data because they model order and context. In tex
 
 Their main limitation is that basic RNNs struggle with long-range dependencies. During training, gradients must be propagated backward through many time steps, which can lead to vanishing or exploding gradients. As a result, simple RNNs may remember recent information well but fail to capture relationships far back in the sequence, which is why architectures such as LSTMs, GRUs, and later attention-based models were developed.</p>
         </div>
-        <p class="hint"><a href="#item-055-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-056-question" class="page page-question" data-source="Chapter 15" data-index="56" data-total="59">
@@ -2364,7 +2369,7 @@ Their main limitation is that basic RNNs struggle with long-range dependencies. 
 - What is the difference between predicting many future steps directly and predicting one step at a time repeatedly?
 - What error-propagation risk appears in iterative forecasting?</p>
         </div>
-        <p class="hint"><a href="#item-056-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-056-answer" class="page page-answer" data-source="Chapter 15" data-index="56" data-total="59">
@@ -2385,7 +2390,7 @@ The advantage of the one-step strategy is that it reuses a simpler model: predic
 
 The key risk is error propagation. If the model makes a small mistake early in the forecast horizon, that mistaken value becomes part of the input for the next prediction. The next prediction may therefore be based on a distorted history, creating further errors. Over several steps, these errors can compound, causing the forecast to drift, overshoot, or miss turning points, as suggested by the divergence between the forecasted blue crosses and the actual red values near the end of the figure.</p>
         </div>
-        <p class="hint"><a href="#item-056-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-057-question" class="page page-question" data-source="Chapter 15" data-index="57" data-total="59">
@@ -2402,7 +2407,7 @@ The key risk is error propagation. If the model makes a small mistake early in t
 - How does this cell address the vanishing-gradient problem?
 - In what kinds of sequence tasks would you prefer this cell over a simple RNN?</p>
         </div>
-        <p class="hint"><a href="#item-057-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-057-answer" class="page page-answer" data-source="Chapter 15" data-index="57" data-total="59">
@@ -2423,7 +2428,7 @@ This architecture helps address the vanishing-gradient problem because the cell 
 
 You would prefer an LSTM over a simple RNN when the task requires remembering information across many time steps or when the relevant signal may appear far before the prediction point. Examples include language modeling, machine translation, sentiment analysis over long reviews, speech recognition, time-series forecasting, customer behavior sequences, fraud detection patterns, and medical or financial sequences where earlier events may influence later outcomes. A simple RNN may work for short, simple dependencies, but an LSTM is usually the stronger choice when memory, context, and sequence length matter.</p>
         </div>
-        <p class="hint"><a href="#item-057-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-058-question" class="page page-question" data-source="Chapter 15" data-index="58" data-total="59">
@@ -2440,7 +2445,7 @@ You would prefer an LSTM over a simple RNN when the task requires remembering in
 - How is it similar to and simpler than an LSTM?
 - Why might a practitioner choose a GRU in a real sequence-modeling problem?</p>
         </div>
-        <p class="hint"><a href="#item-058-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-058-answer" class="page page-answer" data-source="Chapter 15" data-index="58" data-total="59">
@@ -2461,7 +2466,7 @@ In practical terms, the GRU update gate plays a role similar to the LSTM’s inp
 
 A practitioner might choose a GRU when they want much of the sequence-memory power of an LSTM but with a lighter, faster model. Because GRUs have fewer parameters, they often train faster, require less memory, and may work better when the dataset is not very large. For business sequence problems such as demand forecasting, customer behavior modeling, clickstream prediction, text classification, or time-series prediction, a GRU can be a strong default choice when computational efficiency and good predictive performance both matter.</p>
         </div>
-        <p class="hint"><a href="#item-058-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
     <section id="item-059-question" class="page page-question" data-source="Chapter 15" data-index="59" data-total="59">
@@ -2478,7 +2483,7 @@ A practitioner might choose a GRU when they want much of the sequence-memory pow
 - How do causal and dilated convolutions allow the model to handle sequences?
 - Compare this approach with using a recurrent network for long time dependencies.</p>
         </div>
-        <p class="hint"><a href="#item-059-answer">View answer ↓</a> · scroll down · <kbd>↓</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip</p>
       </div>
     </section>
     <section id="item-059-answer" class="page page-answer" data-source="Chapter 15" data-index="59" data-total="59">
@@ -2501,98 +2506,129 @@ Compared with recurrent neural networks, WaveNet avoids passing information forw
 
 The tradeoff is that WaveNet is still autoregressive when generating: it predicts one time step at a time, so generation can be sequential and slow. However, for learning long temporal patterns, stacked causal dilated convolutions provide a powerful alternative to recurrence: they preserve sequence causality, capture broad context efficiently, and are often easier to train at scale than traditional recurrent networks.</p>
         </div>
-        <p class="hint"><a href="#item-059-question">Back to question ↑</a> · <kbd>↑</kbd></p>
+        <p class="hint">Click card or press <kbd>Space</kbd> to flip back</p>
       </div>
     </section>
   </main>
 
   <script>
-    const pages = Array.from(document.querySelectorAll('.page'));
+    const allPages = Array.from(document.querySelectorAll('.page'));
     const progressEl = document.getElementById('progress');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
+    const flipBtn = document.getElementById('flip-btn');
+    const shuffleBtn = document.getElementById('shuffle-btn');
     const toc = document.getElementById('toc');
     const tocToggle = document.getElementById('toc-toggle');
+    const intro = document.getElementById('top');
+    const introToggle = document.getElementById('intro-toggle');
 
-    function visiblePages() {
-      return pages.filter((page) => !page.classList.contains('hidden'));
-    }
-
-    function pageLabel(page) {
-      const kind = page.classList.contains('page-answer') ? 'Answer' : 'Question';
-      return `${kind} · ${page.dataset.index} / ${page.dataset.total}`;
-    }
-
-    function updateProgress() {
-      const visible = visiblePages();
-      const idx = visible.findIndex((page) => {
-        const rect = page.getBoundingClientRect();
-        return rect.top >= -80 && rect.top < window.innerHeight * 0.45;
-      });
-      const current = idx >= 0 ? visible[idx] : visible[0];
-      if (current) {
-        progressEl.textContent = `${pageLabel(current)} · ${visible.indexOf(current) + 1} / ${visible.length} pages`;
-      }
-    }
-
-    function scrollToPage(page, behavior = 'smooth') {
-      if (!page) return;
-      page.scrollIntoView({ behavior, block: 'start' });
-    }
-
-    function currentPageIndex() {
-      const visible = visiblePages();
-      const idx = visible.findIndex((page) => {
-        const rect = page.getBoundingClientRect();
-        return rect.top >= -80 && rect.top < window.innerHeight * 0.45;
-      });
-      return idx >= 0 ? idx : 0;
-    }
-
-    prevBtn.addEventListener('click', () => {
-      const visible = visiblePages();
-      const idx = currentPageIndex();
-      scrollToPage(visible[Math.max(0, idx - 1)]);
+    // Build cards: pair question + answer by data-index.
+    const cardMap = new Map();
+    allPages.forEach((page) => {
+      const idx = page.dataset.index;
+      if (!cardMap.has(idx)) cardMap.set(idx, { q: null, a: null, source: page.dataset.source });
+      const slot = page.classList.contains('page-answer') ? 'a' : 'q';
+      cardMap.get(idx)[slot] = page;
     });
+    const allCards = Array.from(cardMap.values());
 
-    nextBtn.addEventListener('click', () => {
-      const visible = visiblePages();
-      const idx = currentPageIndex();
-      scrollToPage(visible[Math.min(visible.length - 1, idx + 1)]);
+    let order = allCards.map((_, i) => i);
+    let pos = 0;
+    let side = 'q';
+    let activeFilter = 'all';
+
+    function visibleOrder() {
+      return order.filter((i) => activeFilter === 'all' || allCards[i].source === activeFilter);
+    }
+
+    function render() {
+      const vis = visibleOrder();
+      if (!vis.length) return;
+      if (pos >= vis.length) pos = vis.length - 1;
+      if (pos < 0) pos = 0;
+      const card = allCards[vis[pos]];
+      allPages.forEach((page) => page.classList.remove('active'));
+      const showing = side === 'a' && card.a ? card.a : card.q;
+      showing.classList.add('active');
+      showing.scrollTop = 0;
+      const label = side === 'a' ? 'Answer' : 'Question';
+      progressEl.textContent = `${label} · ${pos + 1} / ${vis.length}`;
+    }
+
+    function flip() {
+      side = side === 'q' ? 'a' : 'q';
+      render();
+    }
+    function next() { side = 'q'; pos += 1; render(); }
+    function prev() { side = 'q'; pos -= 1; render(); }
+
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    flipBtn.addEventListener('click', flip);
+
+    shuffleBtn.addEventListener('click', () => {
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      pos = 0;
+      side = 'q';
+      render();
     });
 
     tocToggle.addEventListener('click', () => toc.classList.toggle('open'));
+    introToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      intro.classList.toggle('open');
+    });
 
     document.querySelectorAll('.filter').forEach((button) => {
       button.addEventListener('click', () => {
         document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active'));
         button.classList.add('active');
-        const filter = button.dataset.filter;
-        pages.forEach((page) => {
-          page.classList.toggle('hidden', filter !== 'all' && page.dataset.source !== filter);
-        });
+        activeFilter = button.dataset.filter;
         document.querySelectorAll('.toc-link').forEach((link) => {
-          link.classList.toggle('hidden', filter !== 'all' && link.dataset.source !== filter);
+          link.classList.toggle('hidden', activeFilter !== 'all' && link.dataset.source !== activeFilter);
         });
-        updateProgress();
+        pos = 0;
+        side = 'q';
+        render();
+      });
+    });
+
+    document.querySelectorAll('.toc-link').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.getAttribute('href').replace('#', '');
+        const targetPage = document.getElementById(target);
+        if (!targetPage) return;
+        const idx = targetPage.dataset.index;
+        const cardIdx = allCards.findIndex((c) => c.q && c.q.dataset.index === idx);
+        const vis = visibleOrder();
+        const visPos = vis.indexOf(cardIdx);
+        if (visPos >= 0) { pos = visPos; side = 'q'; render(); }
+        toc.classList.remove('open');
+        intro.classList.remove('open');
+      });
+    });
+
+    // Click card body to flip; ignore clicks on links/buttons.
+    allPages.forEach((page) => {
+      page.addEventListener('click', (e) => {
+        if (e.target.closest('a, button, kbd')) return;
+        flip();
       });
     });
 
     document.addEventListener('keydown', (event) => {
-      const visible = visiblePages();
-      const idx = currentPageIndex();
-      if (['ArrowDown', 'PageDown', 'j'].includes(event.key)) {
-        event.preventDefault();
-        scrollToPage(visible[Math.min(visible.length - 1, idx + 1)]);
-      }
-      if (['ArrowUp', 'PageUp', 'k'].includes(event.key)) {
-        event.preventDefault();
-        scrollToPage(visible[Math.max(0, idx - 1)]);
-      }
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+      if (['ArrowRight', 'PageDown', 'l'].includes(event.key)) { event.preventDefault(); next(); }
+      else if (['ArrowLeft', 'PageUp', 'h'].includes(event.key)) { event.preventDefault(); prev(); }
+      else if ([' ', 'ArrowDown', 'ArrowUp', 'j', 'k', 'Enter'].includes(event.key)) { event.preventDefault(); flip(); }
     });
 
-    window.addEventListener('scroll', updateProgress, { passive: true });
-    updateProgress();
+    render();
   </script>
 </body>
 </html>
